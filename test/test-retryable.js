@@ -2,6 +2,14 @@ var retryable = require(".."),
     expect = require("expect.js"),
     sinon = require("sinon");
 
+function fail(count) {
+    return function() {
+        var done = Array.prototype.pop.call(arguments);
+        if (--count) done(new Error("failures left " + count));
+        else done();
+    }
+}
+
 describe("retryable()", function() {
     it("should return a Retryable function", function() {
         var fn = retryable(function() {});
@@ -15,15 +23,9 @@ describe("retryable()", function() {
 
 describe("Retryable", function() {
     it("should retry until success", function(done) {
-        var failures = 10,
-            fn, spy, retry;
+        var spy, retry;
         
-        fn = function(done) {
-            if (--failures) done(new Error("failure " + failures));
-            else done();
-        };
-
-        spy = sinon.spy(fn);
+        spy = sinon.spy(fail(10));
         retry = retryable(spy);
 
         retry(function() {
@@ -35,9 +37,7 @@ describe("Retryable", function() {
     it("should pass results without any err argument", function(done) {
         var spy, retry;
 
-        spy = sinon.spy(function(done) {
-            done(null, 42, 13);
-        });
+        spy = sinon.spy(function(done) { done(null, 42, 13); });
         retry = retryable(spy);
 
         retry(function(a, b) {
@@ -60,15 +60,9 @@ describe("Retryable", function() {
         });
 
         it("should limit the number of retries", function(done) {
-            var failures = 10,
-                fn, spy, wrapper;
+            var spy, retry;
 
-            fn = function(done) {
-                if (--failures) done(new Error("failure " + failures));
-                else done();
-            };
-
-            spy = sinon.spy(fn);
+            spy = sinon.spy(fail(10));
             retry = retryable(spy).retry(4);
 
             retry(function(err) {
@@ -92,15 +86,9 @@ describe("Retryable", function() {
         });
 
         it("should unlimit retries", function(done) {
-            var failures = 10,
-                fn, spy, wrapper;
+            var spy, retry;
 
-            fn = function(done) {
-                if (--failures) done(new Error("failure " + failures));
-                else done();
-            };
-
-            spy = sinon.spy(fn);
+            spy = sinon.spy(fail(10));
             retry = retryable(spy).retry(4).forever();
 
             retry(function() {
@@ -123,21 +111,15 @@ describe("Retryable", function() {
         });
 
         it("should be called before every retry", function(done) {
-            var failures = 10,
-                fn, spy, wrapper, backoffSpy;
+            var spy, retry, backoff;
 
-            fn = function(done) {
-                if (--failures) done(new Error("failure " + failures));
-                else done();
-            };
-
-            spy = sinon.spy(fn);
-            backoffSpy = sinon.spy(function() {return 0;});
-            retry = retryable(spy).retry(4).backoff(backoffSpy);
+            spy = sinon.spy(fail(10));
+            backoff = sinon.spy(function() {return 0;});
+            retry = retryable(spy).retry(4).backoff(backoff);
 
             retry(function(err) {
                 expect(spy.callCount).to.be(5); // 1 + retries
-                expect(spy.callCount - 1).to.be(backoffSpy.callCount);
+                expect(spy.callCount - 1).to.be(backoff.callCount);
                 done();
             });            
         });
