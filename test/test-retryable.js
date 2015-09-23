@@ -16,7 +16,7 @@ describe("retryable()", function() {
 describe("Retryable", function() {
     it("should retry until success", function(done) {
         var failures = 10,
-            fn, spy, wrapper;
+            fn, spy, retry;
         
         fn = function(done) {
             if (--failures) done(new Error("failure " + failures));
@@ -28,6 +28,21 @@ describe("Retryable", function() {
 
         retry(function() {
             expect(spy.callCount).to.be(10);
+            done();
+        });
+    });
+
+    it("should pass results without any err argument", function(done) {
+        var spy, retry;
+
+        spy = sinon.spy(function(done) {
+            done(null, 42, 13);
+        });
+        retry = retryable(spy);
+
+        retry(function(a, b) {
+            expect(a).to.be(42);
+            expect(b).to.be(13);
             done();
         });
     });
