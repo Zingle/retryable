@@ -1,0 +1,19 @@
+{
+  "name": "retryable",
+  "version": "0.0.1",
+  "description": "retry asynchronous functions and Promises",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "propertize": "^2"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "expect.js": "*",
+    "sinon": "*"
+  },
+  "author": "Richard Remer (reanjr@gmail.com)",
+  "license": "MIT"
+}
