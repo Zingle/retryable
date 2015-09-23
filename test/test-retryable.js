@@ -106,5 +106,25 @@ describe("Retryable", function() {
             expect(withBackoff.backoff).to.be.a("function");
             expect(withBackoff.forever).to.be.a("function");
         });
+
+        it("should be called before every retry", function(done) {
+            var failures = 10,
+                fn, spy, wrapper, backoffSpy;
+
+            fn = function(done) {
+                if (--failures) done(new Error("failure " + failures));
+                else done();
+            };
+
+            spy = sinon.spy(fn);
+            backoffSpy = sinon.spy(function() {return 0;});
+            retry = retryable(spy).retry(4).backoff(backoffSpy);
+
+            retry(function(err) {
+                expect(spy.callCount).to.be(5); // 1 + retries
+                expect(spy.callCount - 1).to.be(backoffSpy.callCount);
+                done();
+            });            
+        });
     });
 });
