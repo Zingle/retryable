@@ -31,4 +31,43 @@ describe("Retryable", function() {
             done();
         });
     });
+
+    describe("#retry(number)", function() {
+        it("should return a new Retryable", function() {
+            var fn = retryable(function() {}),
+                withRetry = fn.retry(5);
+
+            expect(withRetry).to.be.a("function");
+            expect(withRetry).to.not.be(fn);
+            expect(withRetry.retry).to.be.a("function");
+            expect(withRetry.backoff).to.be.a("function");
+            expect(withRetry.forever).to.be.a("function");
+        });
+    });
+
+    describe("#forever()", function() {
+        it("should return a new Retryable", function() {
+            var fn = retryable(function() {}),
+                withForever = fn.forever();
+
+            expect(withForever).to.be.a("function");
+            expect(withForever).to.not.be(fn);
+            expect(withForever.retry).to.be.a("function");
+            expect(withForever.backoff).to.be.a("function");
+            expect(withForever.forever).to.be.a("function");
+        });
+    });
+
+    describe("#backoff(function)", function() {
+        it("should return a new Retryable", function() {
+            var fn = retryable(function() {}),
+                withBackoff = fn.backoff(function() {return 0;});
+
+            expect(withBackoff).to.be.a("function");
+            expect(withBackoff).to.not.be(fn);
+            expect(withBackoff.retry).to.be.a("function");
+            expect(withBackoff.backoff).to.be.a("function");
+            expect(withBackoff.forever).to.be.a("function");
+        });
+    });
 });
