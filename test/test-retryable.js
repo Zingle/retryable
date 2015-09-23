@@ -75,6 +75,24 @@ describe("Retryable", function() {
             expect(withForever.backoff).to.be.a("function");
             expect(withForever.forever).to.be.a("function");
         });
+
+        it("should unlimit retries", function(done) {
+            var failures = 10,
+                fn, spy, wrapper;
+
+            fn = function(done) {
+                if (--failures) done(new Error("failure " + failures));
+                else done();
+            };
+
+            spy = sinon.spy(fn);
+            retry = retryable(spy).retry(4).forever();
+
+            retry(function() {
+                expect(spy.callCount).to.be(10);
+                done();
+            });
+        });
     });
 
     describe("#backoff(function)", function() {
