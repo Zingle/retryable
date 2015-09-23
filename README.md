@@ -22,10 +22,10 @@ open("/tmp/foo", function(fd) { /* ... */ });
 open("/tmp/foo").then(function(fd) { /* ... */ });
 
 // customize retry backoff
-open = retryable(fs.open).backoff([0,1], function(fibs) {
-    fibs.push(fibs[0] + fibs[1]);
-    fibs.shift();
-    return fibs[1];
+open = retryable(fs.open).backoff(function(fibs) {
+    if (!this.data) this.data = [0,1];
+    this.data.push(this.data[0] + this.data[1]);
+    return this.data.unshift();
 });
 ```
 
@@ -35,11 +35,10 @@ API
 ### Retryable
 Wrapped retryable functions implement the Retryable interface.
 
-#### Retryable#backoff([object,] function)
-Return a new retryable function with a custom backoff algorithm.  The function is
-passed an object each retry and is expected to return a value indictating the
-number of milliseconds to wait until the next retry.  The object can be used to
-hold state between calls.
+#### Retryable#backoff(function)
+Return a new retryable function with a custom backoff algorithm.  The function
+is bound to a RetryState instance.  To maintaine state between backoff calls,
+use something like `this.data = "foo"`.
 
 #### Retryable#forever()
 Return a new retryable function which retries forever.  The callback will not
