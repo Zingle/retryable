@@ -32,20 +32,20 @@ open = retryable(fs.open).backoff([0,1], function(fibs) {
 API
 ---
 
-### retryable
-Wrapped retryable functions implement the retryable interface.
+### Retryable
+Wrapped retryable functions implement the Retryable interface.
 
-### retryable#backoff(object, function)
+### Retryable#backoff([object,] function)
 Return a new retryable function with a custom backoff algorithm.  The function is
 passed an object each retry and is expected to return a value indictating the
 number of milliseconds to wait until the next retry.  The object can be used to
 hold state between calls.
 
-### retryable#forever()
+### Retryable#forever()
 Return a new retryable function which retries forever.  The callback will not
 be passed an `err` object.
 
-### retryable#retry(number)
+### Retryable#retry(number)
 Return a new retryable function which limits the number of retries.  The callback
 will ba passed the `err` object from the last retry.
 
