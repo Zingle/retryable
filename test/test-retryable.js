@@ -113,4 +113,20 @@ describe("Retryable", function() {
             });            
         });
     });
+
+    describe("<result>", function() {
+        it("should be a Promise", function(done) {
+            var fn = retryable(function(done) {
+                    done(null, 42);
+                }),
+                result = fn();
+
+            expect(result.then).to.be.a("function");
+            
+            result.then(function(val) {
+                expect(val).to.be(42);
+                done();
+            }).catch(done);
+        });
+    });
 });

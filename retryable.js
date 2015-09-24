@@ -46,7 +46,7 @@ function retryable(fn, retries, backoff) {
             }
         }
 
-        promiseFn.apply(this, arguments);
+        return promiseFn.apply(this, arguments);
     };
 
     retryableFn.retry = function(retries) {
