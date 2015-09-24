@@ -17,7 +17,6 @@ describe("retryable()", function() {
         expect(fn).to.be.a("function");
         expect(fn.retry).to.be.a("function");
         expect(fn.backoff).to.be.a("function");
-        expect(fn.forever).to.be.a("function");
     });
 });
 
@@ -35,11 +34,12 @@ describe("Retryable", function() {
     });
 
     it("should pass results without any err argument", function(done) {
-        var spy, retry;
+        var retry;
 
-        spy = sinon.spy(function(done) { done(null, 42, 13); });
-        retry = retryable(spy);
-
+        retry = retryable(function(done) {
+            done(null, 42, 13);
+        });
+  
         retry(function(a, b) {
             expect(a).to.be(42);
             expect(b).to.be(13);
@@ -47,7 +47,7 @@ describe("Retryable", function() {
         });
     });
 
-    describe("#retry(number)", function() {
+    describe("#retry", function() {
         it("should return a new Retryable", function() {
             var fn = retryable(function() {}),
                 withRetry = fn.retry(5);
@@ -56,44 +56,34 @@ describe("Retryable", function() {
             expect(withRetry).to.not.be(fn);
             expect(withRetry.retry).to.be.a("function");
             expect(withRetry.backoff).to.be.a("function");
-            expect(withRetry.forever).to.be.a("function");
         });
 
-        it("should limit the number of retries", function(done) {
-            var spy, retry;
+        describe("(number)", function() {
+            it("should limit the number of retries", function(done) {
+                var spy, retry;
 
-            spy = sinon.spy(fail(10));
-            retry = retryable(spy).retry(4);
+                spy = sinon.spy(fail(10));
+                retry = retryable(spy).retry(4);
 
-            retry(function(err) {
-                expect(spy.callCount).to.be(5); // 1 + retries
-                expect(err).to.be.ok();
-                done();
+                retry(function(err) {
+                    expect(spy.callCount).to.be(5); // 1 + retries
+                    expect(err).to.be.ok();
+                    done();
+                });
             });
         });
-    });
 
-    describe("#forever()", function() {
-        it("should return a new Retryable", function() {
-            var fn = retryable(function() {}),
-                withForever = fn.forever();
+        describe("()", function() {
+            it("should unlimit retries", function(done) {
+                var spy, retry;
 
-            expect(withForever).to.be.a("function");
-            expect(withForever).to.not.be(fn);
-            expect(withForever.retry).to.be.a("function");
-            expect(withForever.backoff).to.be.a("function");
-            expect(withForever.forever).to.be.a("function");
-        });
+                spy = sinon.spy(fail(10));
+                retry = retryable(spy).retry(4).retry();
 
-        it("should unlimit retries", function(done) {
-            var spy, retry;
-
-            spy = sinon.spy(fail(10));
-            retry = retryable(spy).retry(4).forever();
-
-            retry(function() {
-                expect(spy.callCount).to.be(10);
-                done();
+                retry(function() {
+                    expect(spy.callCount).to.be(10);
+                    done();
+                });
             });
         });
     });
@@ -107,7 +97,6 @@ describe("Retryable", function() {
             expect(withBackoff).to.not.be(fn);
             expect(withBackoff.retry).to.be.a("function");
             expect(withBackoff.backoff).to.be.a("function");
-            expect(withBackoff.forever).to.be.a("function");
         });
 
         it("should be called before every retry", function(done) {
