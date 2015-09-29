@@ -22,7 +22,7 @@ open.retry(5).retry()("/tmp/foo", function(fd) { /* ... */ });
 open("/tmp/foo").then(function(fd) { /* ... */ });
 
 // customize retry backoff (default implementation shown)
-open = retryable(fs.open).backoff(function(fibs) {
+open = retryable(fs.open).backoff(function() {
     if (!this.data) this.data = [0,1];
     this.data.push(this.data[0] + this.data[1]);
     return this.data.unshift();
